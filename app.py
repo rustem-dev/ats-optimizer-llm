@@ -70,7 +70,7 @@ Take the following information as reference for the candidate and opportunity.
 """
 
 # --- GROQ API KEY PATH IN LOCAL ENVIRONMENT -------------------------------
-API_KEY_PATH = r'C:\Users\Leonardo\PycharmProjects\ATS_TAILORING\API_KEY.txt'
+# OpenAI API key will be read from environment variable OPENAI_API_KEY
 
 # ------------------------------------
 # APP FUNCTIONS TO IMPROVE READABILITY
@@ -244,7 +244,7 @@ elif machine.state == "processing_llm":
         show_loading_state()
 
         try:
-            llm_agent = LLMAgent(API_KEY_PATH)
+            llm_agent = LLMAgent()
             result = llm_agent.generate_cv(
                 st.session_state.user_name,
                 st.session_state.resume_text,
@@ -330,7 +330,7 @@ elif machine.state == "job_exploration":
             ]
 
     # Initialize the LLM Chat Agent
-    llm_chat_agent = LLM_Chat(API_KEY_PATH)
+    llm_chat_agent = LLM_Chat()
 
     # Display chat messages (skip system prompt in display)
     for message in st.session_state.chat_history:

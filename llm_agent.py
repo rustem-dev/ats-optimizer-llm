@@ -1,7 +1,8 @@
+import os
 from pydantic import BaseModel, Field, EmailStr, HttpUrl
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_groq import ChatGroq
+from langchain_openai import ChatOpenAI
 from typing import List, Optional
 
 # -----------------------
@@ -96,15 +97,17 @@ class StructuredOutput(BaseModel):
 # ------------------------------------
 
 class LLMAgent:
-    def __init__(self, api_key_path: str):
-        self.API_KEY = open(api_key_path).read()
+    def __init__(self, api_key: str = None):
+        self.API_KEY = api_key or os.getenv('OPENAI_API_KEY')
+        if not self.API_KEY:
+            raise ValueError("OpenAI API key not found. Please set OPENAI_API_KEY environment variable or pass api_key parameter.")
         self.llm = self._initialize_llm()
         self.parser = JsonOutputParser(pydantic_object=StructuredOutput)  # Uses your existing StructuredOutput
         self.chain = self._build_chain()
 
     def _initialize_llm(self):
-        return ChatGroq(
-            model="llama-3.3-70b-versatile",
+        return ChatOpenAI(
+            model="gpt-4o",
             temperature=0.5,
             api_key=self.API_KEY
         )
@@ -159,13 +162,15 @@ class LLMAgent:
 # -----------------------
 
 class LLM_Chat:
-    def __init__(self, API_KEY_PATH):
-        self.API_KEY = open(API_KEY_PATH).read()
+    def __init__(self, api_key: str = None):
+        self.API_KEY = api_key or os.getenv('OPENAI_API_KEY')
+        if not self.API_KEY:
+            raise ValueError("OpenAI API key not found. Please set OPENAI_API_KEY environment variable or pass api_key parameter.")
         self.llm = self._initialize_llm()
 
     def _initialize_llm(self):
-        return ChatGroq(
-            model="llama-3.3-70b-versatile",
+        return ChatOpenAI(
+            model="gpt-4o",
             temperature=0.5,
             api_key=self.API_KEY
         )
