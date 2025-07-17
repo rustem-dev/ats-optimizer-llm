@@ -1,5 +1,5 @@
 import streamlit as st
-import os, time, pathlib
+import os, time, pathlib, json
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader
 import weasyprint
@@ -9,10 +9,16 @@ from file_management import *
 from state_machine import ResumeOptimizerStateMachine
 from llm_agent import *
 
-# Add the path to the GTK3 bin folder -> required to run weasyprint
-# Starting from Python 3.8, Windows does not automatically resolve dependencies
-# in certain directories unless they are explicitly added to the search path.
-os.add_dll_directory(r"C:\Program Files\GTK3-Runtime Win64\bin")
+# GTK3 setup for WeasyPrint - cross-platform compatibility
+import platform
+if platform.system() == "Windows":
+    # Only add GTK DLL directory on Windows if GTK is installed
+    gtk_path = r"C:\Program Files\GTK3-Runtime Win64\bin"
+    if os.path.exists(gtk_path):
+        os.add_dll_directory(gtk_path)
+    else:
+        print("Warning: GTK3 not found at expected Windows path. Install GTK3 runtime for PDF generation.")
+# On Linux/Mac, WeasyPrint should work with system libraries
 
 # Initializing the state machine
 if "machine" not in st.session_state:
@@ -29,8 +35,9 @@ output_path.mkdir(exist_ok=True)
 
 # --- GLOBAL VARIABLES USED FOR PDF GENERATION ----------
 
-output_dir =  r'C:\Users\Leonardo\PycharmProjects\ATS_TAILORING\output'          # That's where the generated PDFs are kept
-template_dir = r'C:\Users\Leonardo\PycharmProjects\ATS_TAILORING\templates'
+# Cross-platform path setup
+output_dir = os.path.join(os.getcwd(), 'output')  # Local output directory
+template_dir = os.path.join(os.getcwd(), 'templates')  # Local templates directory
 # SETTING UP JINJA2 ENVIRONMENT
 env = Environment(loader=FileSystemLoader(template_dir))
 template = env.get_template('cv_template.html')                                  # Custom-made HTML template for the generated PDF Resume
@@ -306,7 +313,7 @@ elif machine.state == "job_exploration":
     st.divider()
 
     # 2. Chat with LLM based on the optimized resume
-    st.subheader("💬 Chat with llama-3.3-70b-versatile")
+    st.subheader("💬 Chat with OpenAI Assistant")
 
     # Initialize or load chat history
     if "chat_history" not in st.session_state:

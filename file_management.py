@@ -1,17 +1,18 @@
 import psycopg2
 import fitz  # pymupdf
 import json
+import os
 
 # Function to connect to the PostgreSQL
 # DOCKER SETUP ON: DB/docker-compose.yml
 # DB INITIALIZATION ON: DB/db-init/initsql.sql
 def get_db_connection():
     conn = psycopg2.connect(
-        host="localhost",        # Database host
-        port="5432",             # Port (default PostgreSQL port)
-        dbname="ats_optimizer",  # Database name (from docker-compose)
-        user="ats_user",         # Username (from docker-compose)
-        password="good_password" # Password (from docker-compose)
+        host=os.getenv("DB_HOST", "localhost"),
+        port=os.getenv("DB_PORT", "5432"),
+        dbname=os.getenv("DB_NAME", "ats_optimizer"),
+        user=os.getenv("DB_USER", "ats_user"),
+        password=os.getenv("DB_PASSWORD", "good_password")
     )
     return conn
 

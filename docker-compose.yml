@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: ats_postgres_db
+    environment:
+      POSTGRES_DB: ats_optimizer
+      POSTGRES_USER: ats_user
+      POSTGRES_PASSWORD: good_password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./DB/db-init:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ats_user -d ats_optimizer"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: ats_optimizer_app
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=ats_optimizer
+      - DB_USER=ats_user
+      - DB_PASSWORD=good_password
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./output:/app/output
+      - ./templates:/app/templates
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
